@@ -1,0 +1,13 @@
+#contents {
+  min-width: 400px;
+}
+.loading {
+  padding-left: 25px;
+  background: url(../img/loading.gif) no-repeat 0px 8px;
+}
+#status {
+  padding: 10px 10px;
+}
+input[type=checkbox] { 
+  vertical-align: middle; display: inline-block; margin: 0;
+}

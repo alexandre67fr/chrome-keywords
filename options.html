@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      <script src="js/jquery.js"></script>
+      <script src="js/config.js"></script>
+      <script src="js/options.js"></script>
+      <link rel="stylesheet" href="bootstrap/css/bootstrap.css" type="text/css" />
+      <link rel="stylesheet" href="css/style.css" type="text/css" />
+   </head>
+   <body>
+   
+     <div class="container">
+       
+      <form role="form" id="mainForm">
+      
+        <h1>Options</h1>
+        
+        <hr />
+      
+        <div class="form-group">
+          <label for="keywords">Keywords</label>
+          <textarea style="width: 100%;" rows="10" class="form-control" name="keywords" id="keywords" placeholder="Enter keywords..."></textarea>
+          <p class="help-block">The list of keywords. Each group of keywords starts with a new line.</p>
+          <p class="help-block">Or upload your text file: <input type="file" id="upl" />
+        </div>
+
+        <hr />
+        
+        <div class="form-group">
+          <label> <input type="checkbox" name="inc_numbers" id="inc_numbers" /> Include numbers in keywords</label>
+        </div>
+        
+        <hr />
+        
+        <div class="form-group">
+          <label> <input type="checkbox" name="inc_ponc" id="inc_ponc" /> Include ponctuations in keywords</label>
+        </div>
+        
+        <hr />
+        
+        <div class="form-group">
+          <label for="phrases_num">Maximum number of phrases - <span></span></label>
+          0 <input type="range" min="0" max="20" step="1" style="" class="form-control" name="phrases_num" id="phrases_num" /> 20
+        </div>
+        
+        <hr />
+        
+        <div class="form-group">
+          <label for="min_chars">Minimum number of characters in a phrase - <span></span></label>
+          0 <input type="range" min="0" max="100" step="5" style="" class="form-control" name="min_chars" id="min_chars" /> 100
+        </div>
+        
+      </form>
+
+     </div>
+     
+   </body>
+</html>

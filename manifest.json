@@ -1,0 +1,36 @@
+{
+  "manifest_version": 2,
+  "version": "1.0",
+  "name": "Phrases Extractor",
+  "content_scripts": [
+    {
+      "matches": ["https://*/*", "http://*/*"],
+      "js": ["js/jquery.js", "js/config.js", "js/content.js"]
+    }
+  ],
+ "permissions": [
+    "history",
+    "tabs",
+    "storage",
+    "unlimitedStorage",
+    "notifications",
+    "http://*/*",
+    "https://*/*",
+    "idle",
+    "activeTab"
+  ],
+  "options_page": "options.html",
+  "background": {
+     "page": "background.html"
+  },
+  "icons": {
+           "16": "img/icon.png",
+           "48": "img/icon.png",
+          "128": "img/icon.png"
+  },
+  "browser_action": {
+    "default_title": "Extract phrases",
+    "default_popup": "popup.html",
+    "default_icon": "img/icon.png"
+  }
+}
