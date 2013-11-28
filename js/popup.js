@@ -30,15 +30,18 @@ function processHtml(s) {
   $("*", s).each(function () {
   
     var el = $(this);
-    if ( el.find("div,section,article,label").length > 0 ) return;
+    if ( el.find("div,section,article,label,h1,h2,h3").length > 0 ) return;
   
     var sentences = $(this).text();
     
-    sentences = sentences.split(/[\.|\!|\?]+/gi);
+    sentences = sentences.replace('...', '<%>');
+    
+    sentences = sentences.split(/[\.\!\?]{1}/gi);    
     
     for (var j in sentences)
     {
       var text = sentences[j];
+      text = text.replace('<%>', '...');
       var re = new RegExp('(^ +| +$)', 'gi');
       text = text.replace(re, '');
       if ( !text.length ) continue;
@@ -73,7 +76,12 @@ function processHtml(s) {
       
       if ( parseInt( getSetting("inc_ponc") ) )
       {
-        if ( !text.match(/[\,\!\?\"]/) )
+        chs = getSetting("ponc_kws");
+        chs = chs.replace(/ +/g, '');
+        chs = chs.replace(/(.{1})/g, '\\$1');
+        //alert(chs);
+        var re3 = new RegExp('['+chs+']');
+        if ( !text.match(re3) )
           found = false;
       }
       
@@ -133,7 +141,10 @@ function make_call() {
               processHtml(alltext);
           }
       });
-      else window.close();
+      else 
+      {
+        $("#status").html('Only web pages (<b>http</b> and <b>https</b>) are supported by this extension.');
+      }
   });
 }
 

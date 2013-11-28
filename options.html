@@ -22,7 +22,13 @@
           <label for="keywords">Keywords</label>
           <textarea style="width: 100%;" rows="10" class="form-control" name="keywords" id="keywords" placeholder="Enter keywords..."></textarea>
           <p class="help-block">The list of keywords. Each group of keywords starts with a new line.</p>
-          <p class="help-block">Or upload your text file: <input type="file" id="upl" />
+          <p class="help-block">
+            Or upload your text file: <br /><br />
+            <label><input name="upl_type" value="append" type="radio" /> Append to the keywords</label>
+            <label><input name="upl_type" value="replace" type="radio" /> Replace the keywords</label>
+            <br />
+            <input type="file" id="upl" />
+          </p>
         </div>
 
         <hr />
@@ -34,7 +40,8 @@
         <hr />
         
         <div class="form-group">
-          <label> <input type="checkbox" name="inc_ponc" id="inc_ponc" /> Include ponctuations in keywords</label>
+          <label> <input type="checkbox" name="inc_ponc" id="inc_ponc" /> Include these ponctuations in keywords:</label>
+          <input type="text" class="form-control" name="ponc_kws" id="ponc_kws" value="" />
         </div>
         
         <hr />
@@ -50,6 +57,12 @@
           <label for="min_chars">Minimum number of characters in a phrase - <span></span></label>
           0 <input type="range" min="0" max="100" step="5" style="" class="form-control" name="min_chars" id="min_chars" /> 100
         </div>
+        
+        <hr />
+        
+        <button class="btn btn-primary" id="save_btn">
+          <i class="icon-ok icon-white"></i> Save
+        </button>
         
       </form>
 

@@ -8,6 +8,6 @@
 #status {
   padding: 10px 10px;
 }
-input[type=checkbox] { 
+input[type=checkbox], input[type=radio] { 
   vertical-align: middle; display: inline-block; margin: 0;
 }

@@ -9,14 +9,20 @@ jQuery(document).ready(function () {
       if ( $(this).attr("type") == "checkbox" )
         localStorage[ i ] = ( $(this).is(":checked") ? 1 : 0 );
       else
-        localStorage[ i ] = $(this).val();
+      {
+        if ( $(this).attr("type") == "radio" )
+          localStorage[ i ] = $("[name="+i+"]:checked").val();
+        else
+          localStorage[ i ] = $(this).val();
+      }
     });
     setFormValues();
   
   }
 
-  form.change(saveFormValues);
-  form.find("[name]").bind("change blur keyup keydown keypress", saveFormValues);
+  //form.change(saveFormValues);
+  //form.find("[name]").bind("click change blur keyup keydown keypress", saveFormValues);
+  //form.find("[type=text]").unbind("keyup keydown keypress");
   
   function setFormValues()
   {
@@ -30,12 +36,27 @@ jQuery(document).ready(function () {
           $("#"+i).removeAttr("checked");
       } 
       else
-        $("#"+i).val( getSetting(i) );
+      {
+        if ( $("[name="+i+"]").attr("type") == "radio" )
+          $("[name="+i+"][value="+getSetting(i)+"]").attr("checked", "checked");
+        else
+          $("#"+i).val( getSetting(i) );
+      }
       $("label[for="+i+"] span").html( getSetting(i) );
     }
   }
   
   setFormValues();
+  
+  $("#save_btn").click(function () {
+    saveFormValues();
+    return false;
+  });
+  
+  $("input[type=range]").change(function () {
+    var e = $(this);
+    e.parents(".form-group").find("span").html( e.val() );
+  });
   
   $("#upl").change(function () {
   
@@ -46,9 +67,10 @@ jQuery(document).ready(function () {
 			var reader = new FileReader();
 
 			reader.onload = function(e) {
-				$("#keywords").val( reader.result );
-				saveFormValues();
-				alert("Keywords were saved successfully.");
+			  var prep = (getSetting('upl_type') == "append" ? $("#keywords").val() + "\n" : "");
+				$("#keywords").val( prep + reader.result );
+				//saveFormValues();
+				//alert("Keywords were saved successfully.");
 			}
 
 			reader.readAsText(file);	
