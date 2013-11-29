@@ -5,7 +5,8 @@
   "content_scripts": [
     {
       "matches": ["https://*/*", "http://*/*"],
-      "js": ["js/jquery.js", "js/config.js", "js/content.js"]
+      "js": ["js/content.js"],
+      "run_at": "document_start"
     }
   ],
  "permissions": [

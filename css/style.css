@@ -1,5 +1,8 @@
 #contents {
-  min-width: 400px;
+  width: 400px;
+}
+#contents ul {
+  width: 354px;
 }
 .loading {
   padding-left: 25px;
@@ -10,4 +13,7 @@
 }
 input[type=checkbox], input[type=radio] { 
   vertical-align: middle; display: inline-block; margin: 0;
+}
+html {
+  overflow: scroll;
 }

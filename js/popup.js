@@ -14,12 +14,25 @@ function getTextWithSpaces(element) {
     return texts.join(' ');
 }
 
+var analyzing = false;
 function processHtml(s) {
+
+  if (analyzing) return;
+
+  analyzing = s;
+
+  console.log("Got body length " + s.length);
 
   var e = $("#status");
   
-  s = $(s);
-  s.find("script,style").remove();
+  s = s.replace('&nbsp;', ' ');
+  
+  console.log("a");
+  
+  s = $("<div />").html(s);
+  s.find("script,style,object,noscript").remove();
+  
+  console.log("b");
   
   var ul = $("<ul />");
   
@@ -27,21 +40,66 @@ function processHtml(s) {
   
   var kws = getSetting("keywords").split("\n");
   
+  console.log("c");
+  
   $("*", s).each(function () {
   
+    //console.log("analyzing...");
+  
     var el = $(this);
-    if ( el.find("div,section,article,label,h1,h2,h3").length > 0 ) return;
+    if ( el.find("div,section,article,label,h1,h2,h3,li,ul,p,blockquote").length > 0 ) return;
+  
+    if ( el.parents("a").length ) return;
+    if ( el.parent()[0].tagName.match(/^(a)$/i) ) return;
   
     var sentences = $(this).text();
     
+    sentences = sentences.replace(/([\n\r\t])/g, ' ');
+    sentences = sentences.replace(/ +/g, ' ').replace(/\u00A0/g, ' ');
+  
+    if (el.children().length == 1)
+    {
+      //if ( el.children()[0].tagName.match(/^(a)$/i) ) return;
+    }
+  
+    if ( el[0].tagName.match(/^(a)$/i) )
+      return;
+    
+    var links = new Array();
+    
+    var exp2 = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+    
+    sentences = sentences.replace(exp2, function(match, contents, offset, s)
+        {
+            links.push(contents);
+            return "<%link"+(links.length-1)+"%>";
+        }
+    );
+    
     sentences = sentences.replace('...', '<%>');
     
-    sentences = sentences.split(/[\.\!\?]{1}/gi);    
+    if ( parseInt( getSetting("inc_ponc") ) )
+    sentences = sentences.replace(/(«.*?»)/gi, function (match, contents, offset, s) {
+      links.push(contents);
+      return "<BREAK><%link"+(links.length-1)+"%><BREAK>";
+    });
+    
+    sentences = sentences.replace(/([\.\!\?]+)/gi, function (match, contents, offset, s) {
+      return contents+"<BREAK>";
+    });
+    
+    sentences = sentences.split("<BREAK>");    
+    
+    //console.log(sentences);cloud
     
     for (var j in sentences)
     {
       var text = sentences[j];
       text = text.replace('<%>', '...');
+      
+      for (var t=0; t<links.length; t++)
+        text = text.replace("<%link"+t+"%>", links[t]);
+      
       var re = new RegExp('(^ +| +$)', 'gi');
       text = text.replace(re, '');
       if ( !text.length ) continue;
@@ -57,7 +115,7 @@ function processHtml(s) {
         kw = kw.replace(/[oòóôö]/, '[oòóôö]');
         kw = kw.replace(/[uùúûü]/, '[uùúûü]');
         if ( !kw.length ) continue;
-        var pre = '([ \.\,\'\"]{1}|^|$)';
+        var pre = '([^a-zaàáâäiìíîïeèéêëoòóôöuùúûü]{1}|^|$)';
         var re2 = new RegExp(pre+'('+kw+')'+pre, 'gi');
         var m;
         m = text.match(re2);
@@ -68,10 +126,19 @@ function processHtml(s) {
         }
       }
       
-      for (var k in texts)
+      if ( parseInt( getSetting("inc_numbers") ) )
       {
-        if (texts[k].text.indexOf(text) >= 0)
-          found = false;
+        //if ( !text.match(/[0-9]+/) ) found = false;
+        var pre = '([^a-zaàáâäiìíîïeèéêëoòóôöuùúûü0-9\:\!\?\"]{1}|^|$)';
+        var re2 = new RegExp(pre+'([0-9]+)'+pre, 'gi');
+        var m;
+        m = text.match(re2);
+        if ( m )
+        {
+          text = text.replace(re2, '$1<b>$2</b>$3');
+          if (found)
+          found += m.length;
+        }
       }
       
       if ( parseInt( getSetting("inc_ponc") ) )
@@ -80,18 +147,33 @@ function processHtml(s) {
         chs = chs.replace(/ +/g, '');
         chs = chs.replace(/(.{1})/g, '\\$1');
         //alert(chs);
-        var re3 = new RegExp('['+chs+']');
-        if ( !text.match(re3) )
-          found = false;
+        var re3 = new RegExp('(['+chs+']{1})', 'g');
+        //if ( !text.match(re3) ) found = false;
+        m = text.match(re3);
+        if ( m )
+        {
+          text = text.replace(re3, '<b>$1</b>');
+          //if (found)
+          found += m.length;
+        }
       }
       
-      if ( parseInt( getSetting("inc_numbers") ) )
+      for (var k in texts)
       {
-        if ( !text.match(/[0-9]+/) )
+        if (texts[k].text.indexOf(text) >= 0)
+          found = false;
+        if (texts[k].text == text)
           found = false;
       }
       
-      if ( !text.match(/\.$/) ) text = text + ".";
+      //if ( text.match(/ +$/) ) found = false;
+      
+      //var mm = text.match(/( +)/);
+      //console.log(mm);
+      
+      if ( text.match(/\<[a-z]+ [a-z]+/i) ) found = false;
+      
+      //if ( !text.match(/\.$/) ) text = text + ".";
       
       if ( !found ) continue;
       
@@ -106,44 +188,90 @@ function processHtml(s) {
     return ((aName < bName) ? -1 : ((aName > bName) ? 1 : res));
   });
   
+  //console.log(texts);
+  
+  console.log("rendering...");
+  
+  var prevTexts = new Array();
+  
   var len = 0;
   for (var i in texts)
   {
     if ( len > parseInt( getSetting("phrases_num") ) )
       break;
+    if ( jQuery.inArray(texts[i].text, prevTexts) !== -1 ) continue;
+    var matchesParts = false;
+    for (var b=0; b<prevTexts.length; b++)
+    {
+      var middle = Math.ceil(prevTexts[b].length / 2);
+      if ( texts[i].text.substring(0, middle) == prevTexts[b].substring(0, middle) )
+        matchesParts = true;
+      //console.log(texts[i].text.substring(middle, middle*2+1), prevTexts[b].substring(middle, middle*2+1));
+      if ( texts[i].text.substring(texts[i].text.length - middle, texts[i].text.length) == prevTexts[b].substring(prevTexts[b].length - middle, prevTexts[b].length) )
+        matchesParts = true;
+    }
+    if ( matchesParts ) continue;
     len++;
     //ul.append( $("<li />").html( texts[i].score + " -> " + texts[i].text ) );
     ul.append( $("<li />").html( texts[i].text ) );
+    prevTexts.push(texts[i].text);
   }
   
   if (len == 0) e.html("No matches were found.");
   else e.html("").append(ul);
   
-  clearTimeout(tOut);
+  clearInterval(tOut);
+  
+  _prevTexts = prevTexts;
 
 }
 
-var tOut = setTimeout(function () {
-  alert("Current tab needs to be reloaded to apply the changes.");
-  chrome.tabs.getSelected(null, function(tab) {
-    var code = 'window.location.reload();';
-    chrome.tabs.executeScript(tab.id, {code: code});
-    window.close();
-  });
-}, 3000);
+var _prevTexts;
+
+var reloading = false;
+
+var tOut = setInterval(function () {
+  if ( analyzing ) { clearInterval(tOut); return; }
+  make_call();
+}, 1000);
 
 function make_call() {
+  console.log("Making call...");
   chrome.tabs.getSelected(null, function(tab) {
-      if ( tab.url.match(/^http/) )
-      chrome.tabs.sendRequest(tab.id, {method: "getText"}, function(response) {
-          if(response.method=="getText"){
-              alltext = response.data;
-              processHtml(alltext);
-          }
-      });
-      else 
+      console.log(tab);
+      if ( tab.status != "complete" )
       {
-        $("#status").html('Only web pages (<b>http</b> and <b>https</b>) are supported by this extension.');
+        $("#status span").html('This page is not completely loaded. Please wait...');
+      }
+      else
+      {
+        if ( tab.url.match(/^http/) )
+        {
+           $("#status span").html(analyzing ? 'Analyzing page...' : 'Please wait...');
+           if ( analyzing ) return;
+           console.log("Sending request");
+            chrome.tabs.sendRequest(tab.id, {method: "getText"}, function(response) {
+              console.log("Received response", response);
+                if (!response)
+                {
+                  //console.log("Error when receiving response");
+                  $("#status span").html('This page needs to be reloaded. Please wait...');
+                  chrome.tabs.getSelected(null, function(tab) {
+                    var code = 'window.location.reload();';
+                    chrome.tabs.executeScript(tab.id, {code: code});
+                    //window.close();
+                  });
+                }
+                if(response.method=="getText"){
+                    alltext = response.data;
+                    processHtml(alltext);
+                }
+            });
+        }
+        else 
+        {
+          $("#status").html('Only web pages (<b>http</b> and <b>https</b>) are supported by this extension.');
+        }
       }
   });
 }
