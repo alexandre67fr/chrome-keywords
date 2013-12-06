@@ -30,7 +30,15 @@ function processHtml(s) {
   console.log("a");
   
   s = $("<div />").html(s);
-  s.find("script,style,object,noscript").remove();
+  s.find("script,style,object,noscript,iframe").remove();
+  s.appendTo("body");
+  s.css({
+    position: 'absolute',
+    top: '-99999px',
+    left: '-99999px',
+    width: '1000px',
+    overflow: 'visible'
+  });
   
   console.log("b");
   
@@ -42,7 +50,9 @@ function processHtml(s) {
   
   console.log("c");
   
-  $("*", s).each(function () {
+  $("*", s).each(function (a, b) {
+  
+    //console.log(a,b);
   
     //console.log("analyzing...");
   
@@ -78,7 +88,7 @@ function processHtml(s) {
     
     sentences = sentences.replace('...', '<%>');
     
-    if ( parseInt( getSetting("inc_ponc") ) )
+    if ( parseInt( getSetting("inc_ponc") ) && false )
     sentences = sentences.replace(/(«.*?»)/gi, function (match, contents, offset, s) {
       links.push(contents);
       return "<BREAK><%link"+(links.length-1)+"%><BREAK>";
@@ -129,14 +139,17 @@ function processHtml(s) {
       if ( parseInt( getSetting("inc_numbers") ) )
       {
         //if ( !text.match(/[0-9]+/) ) found = false;
-        var pre = '([^a-zaàáâäiìíîïeèéêëoòóôöuùúûü0-9\:\!\?\"]{1}|^|$)';
-        var re2 = new RegExp(pre+'([0-9]+)'+pre, 'gi');
+        var pre = '([^a-zaàáâäiìíîïeèéêëoòóôöuùúûü0-9\:\!\?\"><]{1}|^|$)';
+        //pre = '(.)';
+        var re2 = new RegExp(pre+'([0-9\.\,]+)'+pre, 'gi');
         var m;
         m = text.match(re2);
+        console.log(m);
         if ( m )
         {
           text = text.replace(re2, '$1<b>$2</b>$3');
-          if (found)
+          text = text.replace(re2, '$1<b>$2</b>$3');
+          //if (found)
           found += m.length;
         }
       }
@@ -177,18 +190,25 @@ function processHtml(s) {
       
       if ( !found ) continue;
       
-      texts.push({ text: text, score: found });
+      //texts.push({ text: text, score: found });
+      texts.push({ text: text, score: el.offset().top });
     }
   });
+  
+  console.log(texts);
   
   texts = texts.sort(function (a, b){
     var aName = b.score;
     var bName = a.score; 
     var res = ( b.text.length < a.text.length ? -1 : ( b.text.length > a.text.length ? 1 : 0 ) );
-    return ((aName < bName) ? -1 : ((aName > bName) ? 1 : res));
+    return ((aName > bName) ? -1 : ((aName < bName) ? 1 : res));
   });
   
+  console.log(texts);
+  
   //console.log(texts);
+  
+  s.remove();
   
   console.log("rendering...");
   
